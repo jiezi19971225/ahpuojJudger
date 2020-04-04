@@ -4,7 +4,7 @@
 #!/bin/bash
 
 # 创建用户
-/usr/sbin/adduser -D -u 1536 judge
+/usr/sbin/useradd -m -u 1536 judge
 
 # 创建评测机目录文件夹
 cd /home/judge/hustoj_core
@@ -20,7 +20,6 @@ chown judge -R /home/judge/hustoj_core/data
 # supervisorctl
 mkdir /home/judge/scheduler/log
 chown judge /home/judge/scheduler/log
-supervisord
 
 # 修改配置文件
 CPU=$(grep "cpu cores" /proc/cpuinfo | head -1 | awk '{print $4}')
