@@ -1,7 +1,8 @@
 #!/bin/bash
 
 #设置判题机容器运行环境的脚本 生产与部署环境下通用的脚本
-#!/bin/bash
+### github会自动把 LF 转成 CRLF 导致脚本无法执行，进而导致镜像打包失败，可以用以下命令阻止该行为
+# git config --global core.autocrlf false
 
 # 创建用户
 /usr/sbin/useradd -m -u 1536 judge
