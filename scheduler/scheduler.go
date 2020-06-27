@@ -3,9 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Unknwon/goconfig"
-	"github.com/gomodule/redigo/redis"
-	"github.com/jmoiron/sqlx"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -14,6 +11,10 @@ import (
 	"scheduler/redisConn"
 	"strconv"
 	"strings"
+
+	"github.com/Unknwon/goconfig"
+	"github.com/gomodule/redigo/redis"
+	"github.com/jmoiron/sqlx"
 )
 
 var langExts []string
@@ -54,7 +55,7 @@ type Result struct {
 	REInfo     string
 	CustomOut  string
 	ErrorPoint string
-	PassRate float64
+	PassRate   float64
 }
 
 // 清理目录
@@ -66,7 +67,7 @@ func cleanDir(runid int) {
 	cmd = exec.Command("mkdir", workDir+"/log")
 	cmd.Run()
 	// 把当前目录下除了log文件夹的所有内容转移到log文件夹下面
-	cmd = exec.Command("bash","-c"," ls | grep -v log | xargs -i mv {} log")
+	cmd = exec.Command("bash", "-c", " ls | grep -v log | xargs -i mv {} log")
 	cmd.Dir = workDir
 	cmd.Run()
 }
@@ -76,7 +77,6 @@ func prepareEnv(runid int, task *Task) {
 	// 代码
 	workDir := coreDir + "/run" + strconv.Itoa(runid)
 	codeFilePath := workDir + "/Main." + langExts[task.Language]
-	fmt.Println(codeFilePath)
 	ioutil.WriteFile(codeFilePath, []byte(task.Source), 0755)
 	// 用户输入
 	customInputPath := workDir + "/data.in"
@@ -92,7 +92,7 @@ func runJudge(runid int, task *Task) {
 	cmd = exec.Command("./judge_client", coreDir, strconv.Itoa(task.ProblemId), strconv.Itoa(task.Language), strconv.Itoa(task.TimeLimit), strconv.Itoa(task.MemoryLimit), strconv.Itoa(runid))
 	cmd.Dir = schedulerDir
 	err = cmd.Run()
-	fmt.Println(err, "判题程序执行成功")
+	fmt.Println(err, "runid:"+strconv.Itoa(runid)+"判题程序执行成功")
 }
 
 func getResult(runid int) *Result {
@@ -100,26 +100,25 @@ func getResult(runid int) *Result {
 	result := &Result{}
 	resultText, err := ioutil.ReadFile(workDir + "/result.txt")
 	if err == nil {
-		resultList := strings.Split(string(resultText),"\n")
-		result.ResultCode,_ = strconv.Atoi(resultList[0])
-		result.TimeUsed,_ = strconv.Atoi(resultList[1])
-		result.MemoryUsed,_ = strconv.Atoi(resultList[2])
-		result.PassRate,_ =  strconv.ParseFloat(resultList[3],64)
-		result.ErrorPoint =  resultList[4]
+		resultList := strings.Split(string(resultText), "\n")
+		result.ResultCode, _ = strconv.Atoi(resultList[0])
+		result.TimeUsed, _ = strconv.Atoi(resultList[1])
+		result.MemoryUsed, _ = strconv.Atoi(resultList[2])
+		result.PassRate, _ = strconv.ParseFloat(resultList[3], 64)
+		result.ErrorPoint = resultList[4]
 	}
-	ceInfo,err := ioutil.ReadFile(workDir+"/ce.txt")
-	if	err == nil{
+	ceInfo, err := ioutil.ReadFile(workDir + "/ce.txt")
+	if err == nil {
 		result.CEInfo = string(ceInfo)
 	}
-	reInfo,err := ioutil.ReadFile(workDir+"/error.out")
-	if	err == nil{
+	reInfo, err := ioutil.ReadFile(workDir + "/error.out")
+	if err == nil {
 		result.REInfo = string(reInfo)
 	}
-	customOut,err := ioutil.ReadFile(workDir+"/user.out")
-	if	err == nil{
+	customOut, err := ioutil.ReadFile(workDir + "/user.out")
+	if err == nil {
 		result.CustomOut = string(customOut)
 	}
-	fmt.Println("%+v",result)
 	return result
 }
 
@@ -142,34 +141,34 @@ func work(runid int) {
 		cleanDir(runid)
 		if task.ProblemId == 0 {
 			conn.Send("MULTI")
-			conn.Send("hset","testrun:"+task.TestrunCount,"ceinfo",result.CEInfo)
-			conn.Send("hset","testrun:"+task.TestrunCount,"reinfo",result.REInfo)
-			conn.Send("hset","testrun:"+task.TestrunCount,"custom_out",result.CustomOut)
-			conn.Send("hset","testrun:"+task.TestrunCount,"error_point",result.ErrorPoint)
+			conn.Send("hset", "testrun:"+task.TestrunCount, "ceinfo", result.CEInfo)
+			conn.Send("hset", "testrun:"+task.TestrunCount, "reinfo", result.REInfo)
+			conn.Send("hset", "testrun:"+task.TestrunCount, "custom_out", result.CustomOut)
+			conn.Send("hset", "testrun:"+task.TestrunCount, "error_point", result.ErrorPoint)
 			// 测试运行数据只保存5分钟
 			conn.Send("expire", "testrun:"+task.TestrunCount, 60*5)
 			conn.Do("exec")
 		} else {
 			// 更新数据库
 			var err error
-			_,err = DB.Exec("update solution set result = ?,time = ?, memory = ?,judgetime = NOW(),pass_rate = ? where solution_id = ?",result.ResultCode,result.TimeUsed,result.MemoryUsed,result.PassRate,task.SolutionId)
+			_, err = DB.Exec("update solution set result = ?,time = ?, memory = ?,judgetime = NOW(),pass_rate = ? where solution_id = ?", result.ResultCode, result.TimeUsed, result.MemoryUsed, result.PassRate, task.SolutionId)
 			fmt.Println(err)
-			_,err = DB.Exec("update user set solved = (select count(distinct problem_id) from solution where user_id = ? and result = 4 and contest_id = 0) where id = ?",task.UserId,task.UserId)
+			_, err = DB.Exec("update user set solved = (select count(distinct problem_id) from solution where user_id = ? and result = 4 and contest_id = 0) where id = ?", task.UserId, task.UserId)
 			fmt.Println(err)
-			_,err = DB.Exec("update user set submit = (select count(1) from solution where user_id = ? and problem_id > 0 and contest_id = 0) where id = ?",task.UserId,task.UserId)
+			_, err = DB.Exec("update user set submit = (select count(1) from solution where user_id = ? and problem_id > 0 and contest_id = 0) where id = ?", task.UserId, task.UserId)
 			fmt.Println(err)
 
 			// 编译错误
 			if result.ResultCode == 11 {
-				DB.Exec("insert into compileinfo (solution_id,error) values(?,?)",task.SolutionId,result.REInfo)
+				DB.Exec("insert into compileinfo (solution_id,error) values(?,?)", task.SolutionId, result.REInfo)
 			}
 			// 运行错误
 			if result.ResultCode == 10 {
-				DB.Exec("insert into runtimeinfo (solution_id,error) values(?,?)",task.SolutionId,result.REInfo)
+				DB.Exec("insert into runtimeinfo (solution_id,error) values(?,?)", task.SolutionId, result.REInfo)
 			}
 			// 错误点信息 记录到 runtime info中
 			if result.ResultCode >= 6 && result.ResultCode <= 8 {
-				DB.Exec("insert into runtimeinfo (solution_id,error) values(?,?)",task.SolutionId,result.ErrorPoint)
+				DB.Exec("insert into runtimeinfo (solution_id,error) values(?,?)", task.SolutionId, result.ErrorPoint)
 			}
 		}
 	})

@@ -1,1 +1,0 @@
-docker run -it -v $PWD/scheduler:/scheduler  ubuntu:18.04 /bin/bash
