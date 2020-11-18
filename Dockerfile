@@ -45,15 +45,10 @@ RUN set -ex \
 
 WORKDIR /home/judge/
 
-COPY ./assets/docker-entrypoint.sh /usr/local/bin/
 COPY ./assets/judge.conf /home/judge/hustoj_core/etc/judge.conf
 COPY ./assets/java0.policy /home/judge/hustoj_core/etc/java0.policy
 COPY ./assets/install.sh /home/judge/install.sh
 COPY ./scheduler/config.ini /home/judge/scheduler/config.ini
-
-RUN set -ex \
-    && chmod +x /usr/local/bin/docker-entrypoint.sh \
-    && ln -s /usr/local/bin/docker-entrypoint.sh  /docker-entrypoint.sh
 
 COPY --from=0 /scheduler/scheduler /home/judge/scheduler/scheduler
 COPY --from=1 /judgeclient/judge_client /home/judge/scheduler/judge_client
