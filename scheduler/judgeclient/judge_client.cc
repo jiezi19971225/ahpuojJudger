@@ -1676,7 +1676,7 @@ void print_call_array()
 // 入参 第二个参数 ojhome 第三个参数 问题id 第四个参数 语言 第五个参数 时间限制 第六个参数内存限制 第七个参数 runid
 void init_parameters(int argc, char **argv, int &p_id, int &lang, int &time_lmt, int &mem_lmt, int &runid)
 {
-	DEBUG = (argc > 5);
+	DEBUG = (argc > 7);
 	strcpy(oj_home, argv[1]);
 	p_id = atol(argv[2]);
 	lang = atol(argv[3]);
