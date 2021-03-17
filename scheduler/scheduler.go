@@ -129,6 +129,7 @@ func work(runid int) {
 		fmt.Println("runid", runid)
 		var task Task
 		json.Unmarshal(*msg, &task)
+		fmt.Println("task", task)
 		// 清理目录
 		cleanDir(runid)
 		// 准备文件
@@ -137,6 +138,7 @@ func work(runid int) {
 		runJudge(runid, &task)
 		// 获取结果
 		result := getResult(runid)
+		fmt.Println("result", result)
 		// 清理目录
 		cleanDir(runid)
 		if task.ProblemId == 0 {
@@ -160,7 +162,7 @@ func work(runid int) {
 
 			// 编译错误
 			if result.ResultCode == 11 {
-				DB.Exec("insert into compileinfo (solution_id,error) values(?,?)", task.SolutionId, result.REInfo)
+				DB.Exec("insert into compileinfo (solution_id,error) values(?,?)", task.SolutionId, result.CEInfo)
 			}
 			// 运行错误
 			if result.ResultCode == 10 {
