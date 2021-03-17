@@ -12,7 +12,6 @@
 *.out
 
 # scheduler
-/scheduler/config.ini
 /scheduler/log/
 /scheduler/scheduler
 
