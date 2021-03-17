@@ -2,27 +2,16 @@
 
 OJ 的判题环境镜像，其中 judge_client 修改自 HUSTOJ 的判题程序。
 
-## 编译 scheduler
-
-powershell 下
-
+## 调试开发判题机
+构建完镜像后 进入容器内手动运行 judge_client 进行调试
 ```sh
-$env:CGO_ENABLED=0
-$env:GOOS="linux"
-$env:GOARCH="amd64"
-go build scheduler.go
+# 入参 第二个参数 ojhome 第三个参数 问题id 第四个参数 语言 第五个参数 时间限制 第六个参数内存限制 第七个参数 runid
+# 如果参数超过7个，开启DEBUG模式，打印调试信息
+./judge_client /home/judge/hustoj_core 4 1 1 128 0 DEBUG
 ```
 
-## 编译 judge_client
-
-windows 环境下，可以创建一个 ubuntu 18.04 的容器用于编译操作。
+## 构建镜像
 
 ```sh
-docker run -it -v $PWD/scheduler:/scheduler  ubuntu:18.04 /bin/bash
-```
-
-## 打包镜像
-
-```sh
-docker build . -t ahpuoj-judger:dev
+docker build . -t ahpuoj-judger
 ```
