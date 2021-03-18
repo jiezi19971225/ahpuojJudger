@@ -26,9 +26,11 @@ RUN set -ex \
     && apt-get install -y \
     g++\
     openjdk-8-jdk \
-    nano \
+    nano
+
+RUN set -ex \
+    && apt-get install -y \    
     python3.7 \
-    nodejs \
     wget \
     busybox
 
