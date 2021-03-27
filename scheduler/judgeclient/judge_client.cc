@@ -56,7 +56,7 @@ void init_conf()
 	strcpy(java_xms, "-Xms32m");
 	strcpy(java_xmx, "-Xmx256m");
 	sprintf(buf, "%s/etc/judge.conf", oj_home);
-	fp = fopen("./etc/judge.conf", "re");
+	fp = fopen(buf, "re");
 	if (fp != NULL)
 	{
 		while (fgets(buf, BUFFER_SIZE - 1, fp))
@@ -1351,7 +1351,7 @@ void judge_solution(int &ACflg, int &usedtime, int time_lmt, int isspj,
 	//usedtime-=1000;
 	int comp_res;
 	if (!oi_mode)
-		num_of_test = 1.0;
+		num_of_test = 1;
 	if (ACflg == OJ_AC && usedtime > time_lmt * 1000 * (use_max_time ? 1 : num_of_test))
 		ACflg = OJ_TL;
 	if (topmemory > mem_lmt * STD_MB)
@@ -1700,7 +1700,7 @@ void write_result(int result, int time_used, int memeory_used, double pass_rate,
 int main(int argc, char **argv)
 {
 	int p_id, lang, time_lmt, mem_lmt, runid;
-	int isspj, sim, sim_s_id, max_case_time = 0, num_of_test, namelen;
+	int isspj, sim, sim_s_id, max_case_time = 0, num_of_test = 0, namelen;
 	int usedtime = 0, topmemory = 0;
 	int ACflg, PEflg;
 	ACflg = PEflg = OJ_AC;
@@ -1708,8 +1708,8 @@ int main(int argc, char **argv)
 
 	double pass_rate = 0.0;
 
-	init_conf();
 	init_parameters(argc, argv, p_id, lang, time_lmt, mem_lmt, runid);
+	init_conf();
 	char work_dir[BUFFER_SIZE];
 	sprintf(work_dir, "%s/run%d/", oj_home, runid);
 	chdir(work_dir);
